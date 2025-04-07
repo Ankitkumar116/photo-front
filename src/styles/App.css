@@ -176,3 +176,14 @@ h1 {
 .download-btn:hover {
   background: #218838;
 }
+.file-info {
+  color: #4caf50;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.error-message {
+  color: #f44336;
+  margin-top: 8px;
+  font-size: 14px;
+}
