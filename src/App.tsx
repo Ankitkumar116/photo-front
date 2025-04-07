@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './styles/App.css';
 
+const BASE_URL = 'https://photo-resizer-backend1.onrender.com';
+
 const presets = {
   passport: { width: 3.5, height: 4.5, sizeOption: 50, unit: 'cm' },
   aadhar: { width: 2.0, height: 2.0, sizeOption: 20, unit: 'cm' },
@@ -44,10 +46,7 @@ function App() {
     formData.append('unit', unit);
 
     try {
-      const response = await axios.post(
-        'https://photo-resizer-backend1.onrender.com/upload',
-        formData
-      );
+      const response = await axios.post(`${BASE_URL}/upload`, formData);
       setResizedImage(response.data.url);
     } catch (error) {
       console.error('Upload failed:', error);
@@ -106,3 +105,4 @@ function App() {
 }
 
 export default App;
+
