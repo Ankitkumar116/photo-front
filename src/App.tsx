@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './styles/App.css';
 
-const BASE_URL = 'https://photo-resizer-backend1.onrender.com';
-
 const presets = {
   passport: { width: 3.5, height: 4.5, sizeOption: 50, unit: 'cm' },
   aadhar: { width: 2.0, height: 2.0, sizeOption: 20, unit: 'cm' },
@@ -14,15 +12,29 @@ const presets = {
 
 function App() {
   const [image, setImage] = useState<File | null>(null);
+  const [imageName, setImageName] = useState('');
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
   const [sizeOption, setSizeOption] = useState('');
   const [unit, setUnit] = useState('cm');
   const [resizedImage, setResizedImage] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError('');
     if (e.target.files && e.target.files.length > 0) {
-      setImage(e.target.files[0]);
+      const file = e.target.files[0];
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
+      if (!validTypes.includes(file.type)) {
+        setImage(null);
+        setImageName('');
+        setError('Invalid file type. Please upload a JPG or PNG image.');
+        return;
+      }
+
+      setImage(file);
+      setImageName(file.name);
       setResizedImage(null);
     }
   };
@@ -36,7 +48,12 @@ function App() {
   };
 
   const handleUpload = async () => {
-    if (!image) return;
+    if (!image) {
+      setError('Please select an image before resizing.');
+      return;
+    }
+
+    setError('');
 
     const formData = new FormData();
     formData.append('image', image);
@@ -46,22 +63,37 @@ function App() {
     formData.append('unit', unit);
 
     try {
-      const response = await axios.post(`${BASE_URL}/upload`, formData);
+      const response = await axios.post(
+        'https://photo-resizer-backend1.onrender.com/upload',
+        formData
+      );
       setResizedImage(response.data.url);
     } catch (error) {
       console.error('Upload failed:', error);
+      setError('Failed to resize the image. Please try again later.');
     }
   };
 
   const handleDownload = () => {
     if (!resizedImage) return;
+  
     const link = document.createElement('a');
     link.href = resizedImage;
     link.download = 'resized-image.jpg';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  
+    // Reset everything after download
+    setResizedImage(null);
+    setImage(null);
+    setImageName('');
+    setWidth('');
+    setHeight('');
+    setSizeOption('');
+    setUnit('cm');
   };
+  
 
   return (
     <div className='container stylish-container'>
@@ -70,6 +102,8 @@ function App() {
       <div className='file-input-container'>
         <input type='file' id='fileInput' className='file-input' onChange={handleImageChange} />
         <label htmlFor='fileInput' className='file-label'>Choose File</label>
+        {imageName && <p className='file-info'>✅ Selected: {imageName}</p>}
+        {error && <p className='error-message'>⚠️ {error}</p>}
       </div>
 
       <div className='presets'>
@@ -105,4 +139,3 @@ function App() {
 }
 
 export default App;
-
